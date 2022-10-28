@@ -8,12 +8,12 @@
         <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css" />
         <script src="https://openlayers.org/en/v4.6.5/build/ol.js" type="text/javascript"></script>
        
-        <link rel="stylesheet" href="http://localhost:8081/libs/openlayers/css/ol.css" type="text/css" />
-        <script src="http://localhost:8081/libs/openlayers/build/ol.js" type="text/javascript"></script>
+        <!-- <link rel="stylesheet" href="http://localhost:8081/libs/openlayers/css/ol.css" type="text/css" />
+        <script src="http://localhost:8081/libs/openlayers/build/ol.js" type="text/javascript"></script> -->
         
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js" type="text/javascript"></script>
        
-        <script src="http://localhost:8081/libs/jquery/jquery-3.4.1.min.js" type="text/javascript"></script>
+        <!-- <script src="http://localhost:8081/libs/jquery/jquery-3.4.1.min.js" type="text/javascript"></script> -->
         <style>
             /*
             .map, .righ-panel {
@@ -36,10 +36,15 @@
         <table>
             <tr>
                 <td>
+                <div id="popup" class="ol-popup">
+                    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                    <div id="popup-content"></div>
+                </div>
                     <div id="map" class="map" style="width: 80vw; height: 100vh;"></div>
                 </td>
                 <td>
-                    <button>Button</button>
+                <button  value="rails"> Button </button>
+                <input onclick="oncheckrails();" type="checkbox" id="rails" name="layer" value="rails"> Đường sắt <br />
                 </td>
             </tr>
         </table>
@@ -59,15 +64,31 @@
         <script>
             var format = 'image/png';
             var map;
-            var minX = 102.107955932617;
-            var minY = 8.30629730224609;
-            var maxX = 109.505798339844;
-            var maxY = 23.4677505493164;
+            var minX = 103.950614929199;
+            var minY = 10.7116680145264;
+            var maxX = 109.429656982422;
+            var maxY = 22.5523777008057;
             var cenX = (minX + maxX) / 2;
             var cenY = (minY + maxY) / 2;
             var mapLat = cenY;
             var mapLng = cenX;
             var mapDefaultZoom = 6;
+            var container = document.getElementById('popup');
+            var closer = document.getElementById('popup-closer');
+           
+            var overlay = new ol.Overlay( /** @type {olx.OverlayOptions} */ ({
+            element: container,
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250
+            }
+            }));
+            closer.onclick = function() {
+            overlay.setPosition(undefined);
+            closer.blur();
+            return false;
+             };
+          
             function initialize_map() {
                 //*
                 layerBG = new ol.layer.Tile({
@@ -77,15 +98,37 @@
                 var layerCMR_adm1 = new ol.layer.Image({
                     source: new ol.source.ImageWMS({
                         ratio: 1,
-                        url: 'http://localhost:8080/geoserver/btl/wms?',
+                        url: 'http://localhost:8080/geoserver/example/wms?',
                         params: {
                             'FORMAT': format,
                             'VERSION': '1.1.1',
                             STYLES: '',
-                            LAYERS: 'gadm41_vnm_1',
+                            LAYERS: 'duongsat',
                         }
                     })
                 });
+
+                   //đường sat
+            var layer_freeway;
+            var chkRails = document.getElementById("rails");
+            function oncheckrails() {
+            handleOnCheck('rails', layer_rails);
+
+        }
+
+             layer_rails = new ol.layer.Image({
+                source: new ol.source.ImageWMS({
+                    ratio: 1,
+                    url: 'http://localhost:8080/geoserver/example/wms?',
+                    params: {
+                        'FORMAT': format,
+                        'VERSION': '1.1.1',
+                        STYLES: '',
+                        LAYERS: 'duongsat ',
+                    }
+                })
+
+            });
                 var viewMap = new ol.View({
                     center: ol.proj.fromLonLat([mapLng, mapLat]),
                     zoom: mapDefaultZoom
@@ -118,6 +161,33 @@
                     style: styleFunction
                 });
                 map.addLayer(vectorLayer);
+
+            //     var buttonReset = document.getElementById("btnRest").addEventListener("click", () => {
+            //     location.reload();
+            // })
+
+            //     var button = document.getElementById("btnSeacher").addEventListener("click",
+            //     () => {
+            //         vectorLayer.setStyle(styleFunction);
+            //         ctiy.value.length ?
+            //             $.ajax({
+            //                 type: "POST",
+            //                 url: "CMR_pgsqlAPI.php",
+            //                 data: {
+            //                     name: ctiy.value
+            //                 },
+            //                 success: function(result, status, erro) {
+
+            //                     if (result == 'null')
+            //                         alert("không tìm thấy đối tượng");
+            //                     else
+            //                         highLightObj(result);
+            //                 },
+            //                 error: function(req, status, error) {
+            //                     alert(req + " " + status + " " + error);
+            //                 }
+            //             }) : alert("Nhập dữ liệu tìm kiếm")
+            //     });
 
                 function createJsonObj(result) {                    
                     var geojsonObject = '{'
@@ -177,6 +247,13 @@
                     //drawGeoJsonObj(objJson);
                     highLightGeoJsonObj(objJson);
                 }
+
+                function displayObjInfo(result, coordinate) {
+                $("#popup-content").html(result);
+                overlay.setPosition(coordinate);
+
+            }
+
                 map.on('singleclick', function (evt) {
                     //alert("coordinate: " + evt.coordinate);
                     //var myPoint = 'POINT(12,5)';
@@ -199,6 +276,38 @@
                             alert(req + " " + status + " " + error);
                         }
                     });
+                    // if (value == "rails") {
+                    // //rails
+                    // vectorLayer.setStyle(styleFunction);
+                    $.ajax({
+                        type: "POST",
+                        url: "CMR_pgsqlAPI.php",
+                        data: {
+                            functionname: 'getInfoRailsToAjax',
+                            paPoint: myPoint
+                        },
+                        success: function(result, status, erro) {
+                            displayObjInfo(result, evt.coordinate);
+                        },
+                        error: function(req, status, error) {
+                            alert(req + " " + status + " " + error);
+                        }
+                    });
+                    $.ajax({
+                        type: "POST",
+                        url: "CMR_pgsqlAPI.php",
+                        data: {
+                            functionname: 'getRailsToAjax',
+                            paPoint: myPoint
+                        },
+                        success: function(result, status, erro) {
+                            highLightObj(result);
+                        },
+                        error: function(req, status, error) {
+                            alert(req + " " + status + " " + error);
+                        }
+                    });
+                // }
                     //*/
                 });
             };

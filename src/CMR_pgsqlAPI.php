@@ -11,8 +11,16 @@
             $aResult = getGeoCMRToAjax($paPDO, $paSRID, $paPoint);
         else if ($functionname == 'getInfoCMRToAjax')
             $aResult = getInfoCMRToAjax($paPDO, $paSRID, $paPoint);
+        //đường giao thông
+        else if ($functionname == 'getInfoRailsToAjax')
+            $aResult = getInfoRailsToAjax($paPDO, $paSRID, $paPoint);
+        else if ($functionname == 'getRailsToAjax')
+            $aResult = getRailsToAjax($paPDO, $paSRID, $paPoint);
+        else if ($functionname == 'getRailsToAjax')
+            $aResult = getRailsToAjax($paPDO, $paSRID, $paPoint);
         
-        echo $aResult;
+        
+            echo $aResult;
     
         closeDB($paPDO);
     }
@@ -20,7 +28,7 @@
     function initDB()
     {
         // Kết nối CSDL
-        $paPDO = new PDO('pgsql:host=localhost;dbname=BTL;port=5432', 'postgres', '20122001');
+        $paPDO = new PDO('pgsql:host=localhost;dbname=BTL_NHOM2;port=5432', 'postgres', 'hp123456#');
         return $paPDO;  
     }
     function query($paPDO, $paSQLStr)
@@ -193,4 +201,45 @@
         else
             return "null";
     }
+
+    // hightlight đường
+    function getRailsToAjax($paPDO, $paSRID, $paPoint)
+    {
+        $paPoint = str_replace(',', ' ', $paPoint);   
+        $strDistance = "ST_Distance('" . $paPoint . "',ST_AsText(geom))";
+        $strMinDistance = "SELECT min(ST_Distance('" . $paPoint . "',ST_AsText(geom))) from duongsat";
+        $mySQLStr = "SELECT ST_AsGeoJson(geom) as geo from duongsat where " . $strDistance . " = (" . $strMinDistance . ") and " . $strDistance . " < 0.1";
+        $result = query($paPDO, $mySQLStr);
+
+        if ($result != null) {
+            // Lặp kết quả
+            foreach ($result as $item) {
+                return $item['geo'];
+            }
+        } else
+            return "null";
+    }
+    //Truy van thong tin streest
+function getInfoRailsToAjax($paPDO, $paSRID, $paPoint)
+{
+    $paPoint = str_replace(',', ' ', $paPoint);
+    $strDistance = "ST_Distance('" . $paPoint . "',ST_AsText(geom))";
+    $strMinDistance = "SELECT min(ST_Distance('" . $paPoint . "',ST_AsText(geom))) from duongsat";
+    $mySQLStr = "SELECT *  from duongsat where " . $strDistance . " = (" . $strMinDistance . ") and " . $strDistance . " < 0.5";
+    $result = query($paPDO, $mySQLStr);
+
+    if ($result != null) {
+        $resFin = '<table>';
+        // Lặp kết quả
+        foreach ($result as $item) {
+            $resFin = $resFin . '<tr><td>G_ID: ' . $item['gid'] . '</td></tr>';
+            $resFin = $resFin . '<tr><td>Tên đường : ' . $item['name'] . '</td></tr>';
+            $resFin = $resFin . '<tr><td>Loại đường : ' . $item['type'] . '</td></tr>';
+            break;
+        }
+        $resFin = $resFin . '</table>';
+        return $resFin;
+    } else
+        return "null";
+}
 ?>
