@@ -7,20 +7,98 @@
     width: 80vw;
     float: left;
 }
+
+.ol-popup {
+    position: absolute;
+    background-color: white;
+    -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: 12px;
+    left: -50px;
+    min-width: 180px;
+}
+
+.ol-popup:after,
+.ol-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.ol-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+
+.ol-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+
+.ol-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 8px;
+}
 </style>
 
-<body onload="initialize_map();" >
-    <table class="container">
+<body onload="initialize_map();" class="container">
+    <table>
         <tr>
             <td>
-                <div id="map" class="map" style="width: 80vw; height: 100vh;"></div>
+                <div id="map" class="map"></div>
+                <!-- <div id="map" style="width: 80vw; height: 98vh;"></div> -->
+            </td>
+            <td>
+                <div id="info"></div>
+                <div id="popup" class="ol-popup">
+                    <a href="#" id="popup-closer" class="ol-popup-closer">X</a>
+                    <div id="popup-content"></div>
+                </div>
             </td>
         </tr>
     </table>
     <?php include 'CMR_pgsqlAPI.php' ?>
     <script>
+    /**
+     * Elements that make up the popup.
+     */
+    var container = document.getElementById('popup');
+    var closer = document.getElementById('popup-closer');
+    /**
+     * Create an overlay to anchor the popup to the map.
+     */
+    var overlay = new ol.Overlay( /** @type {olx.OverlayOptions} */ ({
+        element: container,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
+        }
+    }));
+    /**
+     * Add a click handler to hide the popup.
+     * @return {boolean} Don't follow the href.
+     */
+    closer.onclick = function() {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+    };
     var format = 'image/png';
     var map;
+    var vectorLayer;
     var minX = 102.107955932617;
     var minY = 8.30629730224609;
     var maxX = 109.505798339844;
@@ -42,44 +120,44 @@
                 url: 'http://localhost:8080/geoserver/btl/wms?',
                 params: {
                     'FORMAT': format,
-                    'VERSION': '1.1.1',
+                    'VERSION': '1.1.0',
                     STYLES: '',
-                    LAYERS: 'gadm41_vnm_1',
+                    LAYERS: 'cang',
                 }
             })
         });
 
-        var viewMap = new ol.View({
+        var view = new ol.View({
             center: ol.proj.fromLonLat([mapLng, mapLat]),
             zoom: mapDefaultZoom
         });
 
-        map = new ol.Map({
+        var map = new ol.Map({
             target: "map",
             layers: [layerBG, layerCMR_adm1],
-            //layers: [layerCMR_adm1],
-            view: viewMap
+            overlays: [overlay],
+            view: view
         });
 
+        var image = new ol.style.Circle({
+            radius: 5,
+            fill: null,
+            stroke: new ol.style.Stroke({
+                color: "yellow",
+                width: 5
+            }),
+        });
         var styles = {
-            'MultiPolygon': new ol.style.Style({
-                fill: new ol.style.Fill({
-                    color: 'orange'
-                }),
-                stroke: new ol.style.Stroke({
-                    color: 'yellow',
-                    width: 2
-                })
+            'Point': new ol.style.Style({
+                image: image,
             })
         };
-
         var styleFunction = function(feature) {
             return styles[feature.getGeometry().getType()];
         };
-        var vectorLayer = new ol.layer.Vector({
+        vectorLayer = new ol.layer.Vector({
             style: styleFunction
         });
-
         map.addLayer(vectorLayer);
 
         function createJsonObj(result) {
@@ -106,10 +184,15 @@
                     featureProjection: 'EPSG:3857'
                 })
             });
-            var vectorLayer = new ol.layer.Vector({
+            vectorLayer = new ol.layer.Vector({
                 source: vectorSource
             });
             map.addLayer(vectorLayer);
+        }
+
+        function displayObjInfo(result, coordinate) {
+            $("#popup-content").html(result);
+            overlay.setPosition(coordinate);
         }
 
         function highLightGeoJsonObj(paObjJson) {
@@ -127,7 +210,8 @@
             var objJson = JSON.parse(strObjJson);
             highLightGeoJsonObj(objJson);
         }
-        map.on('singleclick', function(evt) {
+
+        map.on('singleclick', (evt) => {
             var lonlat = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
             var lon = lonlat[0];
             var lat = lonlat[1];
@@ -136,7 +220,21 @@
                 type: "POST",
                 url: "CMR_pgsqlAPI.php",
                 data: {
-                    functionname: 'getGeoCMRToAjax',
+                    functionname: 'getPopupCMRToAjax',
+                    paPoint: myPoint
+                },
+                success: function(result, status, erro) {
+                    displayObjInfo(result, evt.coordinate);
+                },
+                error: function(req, status, error) {
+                    alert(req + " " + status + " " + error);
+                }
+            });
+            $.ajax({
+                type: "POST",
+                url: "CMR_pgsqlAPI.php",
+                data: {
+                    functionname: 'getGeoPointCMRToAjax',
                     paPoint: myPoint
                 },
                 success: function(result, status, erro) {
