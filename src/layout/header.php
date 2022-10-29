@@ -25,7 +25,7 @@
                         <a class="nav-link" href="../src/CMR_RailWaysObj.php">Đường sắt</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
+                        <a class="nav-link" href="../src/CMR_airportObj.php">Sân bay</a>
                     </li>
                     
                 </ul>

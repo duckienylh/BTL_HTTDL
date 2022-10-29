@@ -17,6 +17,10 @@
             $aResult = getGeoPointCMRToAjax($paPDO, $paSRID, $paPoint);
         else if($functionname == 'getGeoRailWayoAjax' )
             $aResult = getGeoRailWayoAjax($paPDO, $paSRID, $paPoint);
+        else if($functionname == 'getInfoAirportCMRToAjax' )
+            $aResult = getInfoAirportCMRToAjax($paPDO, $paSRID, $paPoint);
+        else if($functionname == 'getGeoAirportCMRToAjax' )
+            $aResult = getGeoAirportCMRToAjax($paPDO, $paSRID, $paPoint);
         echo $aResult;
     
         closeDB($paPDO);
@@ -135,12 +139,54 @@
     }
     function getGeoPointCMRToAjax($paPDO,$paSRID,$paPoint)
     {
-        //echo $paPoint;
-        //echo "<br>";
         $paPoint = str_replace(',', ' ', $paPoint);
         $strDistance = "ST_Distance('" . $paPoint . "',ST_AsText(geom))";
         $strMinDistance = "SELECT min(ST_Distance('" . $paPoint . "',ST_AsText(geom))) from \"cang\" ";
         $mySQLStr = "SELECT ST_AsGeoJson(geom) as geo from \"cang\" where " . $strDistance . " = (" . $strMinDistance . ") and " . $strDistance . " < 0.1";
+        $result = query($paPDO, $mySQLStr);
+
+        if ($result != null)
+        {
+            // Lặp kết quả
+            foreach ($result as $item){
+                return $item['geo'];
+            }
+        }
+        else
+            return "null";
+    }
+
+    function getInfoAirportCMRToAjax($paPDO,$paSRID,$paPoint)
+    {
+        $paPoint = str_replace(',', ' ', $paPoint);
+        $strDistance = "ST_Distance('" . $paPoint . "',ST_AsText(geom))";
+        $strMinDistance = "SELECT min(ST_Distance('" . $paPoint . "',ST_AsText(geom))) from \"sanbay\" ";
+        $mySQLStr = "SELECT * from \"sanbay\" where " . $strDistance . " = (" . $strMinDistance . ") and " . $strDistance . " < 0.1";
+        $result = query($paPDO, $mySQLStr);
+        if ($result != null)
+        {
+        
+            $resFin = '<table>';
+            // Lặp kết quả
+            foreach ($result as $item){
+                $resFin = $resFin.'<tr><td>gid: '.$item['gid'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Tên sân bay: '.$item['ten'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Loại: '.$item['loai'].'</td></tr>';
+                break;
+            }
+            $resFin = $resFin.'</table>';
+            return $resFin;
+        }
+        else
+            return "null";
+    }
+
+    function getGeoAirportCMRToAjax($paPDO,$paSRID,$paPoint)
+    {
+        $paPoint = str_replace(',', ' ', $paPoint);
+        $strDistance = "ST_Distance('" . $paPoint . "',ST_AsText(geom))";
+        $strMinDistance = "SELECT min(ST_Distance('" . $paPoint . "',ST_AsText(geom))) from \"sanbay\" ";
+        $mySQLStr = "SELECT ST_AsGeoJson(geom) as geo from \"sanbay\" where " . $strDistance . " = (" . $strMinDistance . ") and " . $strDistance . " < 0.1";
         $result = query($paPDO, $mySQLStr);
 
         if ($result != null)
