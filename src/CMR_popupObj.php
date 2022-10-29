@@ -54,7 +54,7 @@
 }
 </style>
 
-<body onload="initialize_map();" class="container">
+<body onload="initialize_map();" class="">
     <table>
         <tr>
             <td>
@@ -96,6 +96,7 @@
         closer.blur();
         return false;
     };
+    var ctiy = document.getElementById("ctiy");
     var format = 'image/png';
     var map;
     var vectorLayer;
@@ -150,6 +151,15 @@
         var styles = {
             'Point': new ol.style.Style({
                 image: image,
+            }),
+            'MultiPolygon': new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: 'orange'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'yellow',
+                    width: 2
+                })
             })
         };
         var styleFunction = function(feature) {
@@ -210,6 +220,49 @@
             var objJson = JSON.parse(strObjJson);
             highLightGeoJsonObj(objJson);
         }
+
+        var button = document.getElementById("btnSeacher").addEventListener("click",
+                () => {
+                    vectorLayer.setStyle(styleFunction);
+                    if(ctiy.value.length) {
+                        $.ajax({
+                            type: "POST",
+                            url: "CMR_pgsqlAPI.php",
+                            data: {
+                                functionname2: 'seacherCity',
+                                name: ctiy.value
+                            },
+                            
+                            success: function(result, status, erro) {
+                                console.log('abc');
+                                if (result == 'null')
+                                    alert("không tìm thấy đối tượng");
+                                else
+                                    console.log(result);
+                                    highLightObj(result);
+                            },
+                            error: function(req, status, error) {
+                                alert(req + " " + status + " " + error);
+                            }
+                        });
+                        $.ajax({
+                            type: "POST",
+                            url: "CMR_pgsqlAPI.php",
+                            data: {
+                                functionname2: 'getInfoSearchoAjax',
+                                name: ctiy.value
+                            },
+                            success: function(result, status, erro) {
+                                displayObjInfo(result);
+                            },
+                            error: function(req, status, error) {
+                                alert(req + " " + status + " " + error);
+                            }
+                        });
+                    }else alert("Nhập dữ liệu tìm kiếm")
+
+                        
+                });
 
         map.on('singleclick', (evt) => {
             var lonlat = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');

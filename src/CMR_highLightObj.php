@@ -10,15 +10,20 @@
 </style>
 
 <body onload="initialize_map();" >
-    <table class="container">
+    <table>
         <tr>
             <td>
                 <div id="map" class="map" style="width: 80vw; height: 100vh;"></div>
             </td>
+            <td>
+                <div id="info"></div>
+            </td>
         </tr>
     </table>
     <?php include 'CMR_pgsqlAPI.php' ?>
+    
     <script>
+    var ctiy = document.getElementById("ctiy");
     var format = 'image/png';
     var map;
     var minX = 102.107955932617;
@@ -57,7 +62,6 @@
         map = new ol.Map({
             target: "map",
             layers: [layerBG, layerCMR_adm1],
-            //layers: [layerCMR_adm1],
             view: viewMap
         });
 
@@ -127,6 +131,52 @@
             var objJson = JSON.parse(strObjJson);
             highLightGeoJsonObj(objJson);
         }
+        function displayObjInfo(result, coordinate) {
+            $("#info").html(result);
+        }
+        
+        var button = document.getElementById("btnSeacher").addEventListener("click",
+                () => {
+                    vectorLayer.setStyle(styleFunction);
+                    if(ctiy.value.length) {
+                        $.ajax({
+                            type: "POST",
+                            url: "CMR_pgsqlAPI.php",
+                            data: {
+                                functionname2: 'seacherCity',
+                                name: ctiy.value
+                            },
+                            
+                            success: function(result, status, erro) {
+                                console.log('abc');
+                                if (result == 'null')
+                                    alert("không tìm thấy đối tượng");
+                                else
+                                    console.log(result);
+                                    highLightObj(result);
+                            },
+                            error: function(req, status, error) {
+                                alert(req + " " + status + " " + error);
+                            }
+                        });
+                        $.ajax({
+                            type: "POST",
+                            url: "CMR_pgsqlAPI.php",
+                            data: {
+                                functionname2: 'getInfoSearchoAjax',
+                                name: ctiy.value
+                            },
+                            success: function(result, status, erro) {
+                                displayObjInfo(result);
+                            },
+                            error: function(req, status, error) {
+                                alert(req + " " + status + " " + error);
+                            }
+                        });
+                    }else alert("Nhập dữ liệu tìm kiếm")
+
+                        
+                });
         map.on('singleclick', function(evt) {
             var lonlat = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
             var lon = lonlat[0];
@@ -146,9 +196,25 @@
                     alert(req + " " + status + " " + error);
                 }
             });
+
+            $.ajax({
+                type: "POST",
+                url: "CMR_pgsqlAPI.php",
+                data: {
+                    functionname: 'getInfoCMRToAjax',
+                    paPoint: myPoint
+                },
+                success: function(result, status, erro) {
+                    displayObjInfo(result, evt.coordinate);
+                },
+                error: function(req, status, error) {
+                    alert(req + " " + status + " " + error);
+                }
+            });
         });
     };
     </script>
+     
 </body>
 
 <?php include './layout/footer.php' ?>

@@ -15,15 +15,30 @@
             $aResult = getPopupCMRToAjax($paPDO, $paSRID, $paPoint);
         else if ($functionname == 'getGeoPointCMRToAjax')
             $aResult = getGeoPointCMRToAjax($paPDO, $paSRID, $paPoint);
+        else if($functionname == 'getGeoRailWayoAjax' )
+            $aResult = getGeoRailWayoAjax($paPDO, $paSRID, $paPoint);
         echo $aResult;
     
         closeDB($paPDO);
     }
 
+    if (isset($_POST['functionname2'])) {
+        $paPDO = initDB();
+        $paSRID = '4326';
+        $name = $_POST['name'];
+        $functionname2 = $_POST['functionname2'];
+        if($functionname2 == 'seacherCity')
+            $aResult = seacherCity($paPDO, $paSRID, $name);
+        else if($functionname2 == 'getInfoSearchoAjax')
+            $aResult = getInfoSearchoAjax($paPDO, $paSRID, $name);
+        
+        echo $aResult;
+    }
+
     function initDB()
     {
         // Kết nối CSDL
-        $paPDO = new PDO('pgsql:host=localhost;dbname=BTL;port=5432', 'postgres', '123456');
+        $paPDO = new PDO('pgsql:host=localhost;dbname=BTL;port=5432', 'postgres', '20122001');
         return $paPDO;  
     }
     function query($paPDO, $paSQLStr)
@@ -74,7 +89,7 @@
     function getInfoCMRToAjax($paPDO,$paSRID,$paPoint)
     {
         $paPoint = str_replace(',', ' ', $paPoint);
-        $mySQLStr = "SELECT gid, shape_leng, shape_area from \"gadm41_vnm_1\" where ST_Within('SRID=".$paSRID.";".$paPoint."'::geometry,geom)";
+        $mySQLStr = "SELECT gid, shape_leng, shape_area, name_1 from \"gadm41_vnm_1\" where ST_Within('SRID=".$paSRID.";".$paPoint."'::geometry,geom)";
         $result = query($paPDO, $mySQLStr);
         
         if ($result != null)
@@ -83,6 +98,7 @@
             // Lặp kết quả
             foreach ($result as $item){
                 $resFin = $resFin.'<tr><td>gid_1: '.$item['gid'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Tên tỉnh: '.$item['name_1'].'</td></tr>';
                 $resFin = $resFin.'<tr><td>Chu vi: '.$item['shape_leng'].'</td></tr>';
                 $resFin = $resFin.'<tr><td>Diện tích: '.$item['shape_area'].'</td></tr>';
                 break;
@@ -133,6 +149,60 @@
             foreach ($result as $item){
                 return $item['geo'];
             }
+        }
+        else
+            return "null";
+    }
+    function getGeoRailWayoAjax($paPDO,$paSRID,$paPoint)
+    {
+        $paPoint = str_replace(',', ' ', $paPoint);   
+        $strDistance = "ST_Distance('" . $paPoint . "',ST_AsText(geom))";
+        $strMinDistance = "SELECT min(ST_Distance('" . $paPoint . "',ST_AsText(geom))) from railways";
+        $mySQLStr = "SELECT ST_AsGeoJson(geom) as geo from railways where " . $strDistance . " = (" . $strMinDistance . ") and " . $strDistance . " < 0.1";
+        $result = query($paPDO, $mySQLStr);
+
+    if ($result != null) {
+        // Lặp kết quả
+        foreach ($result as $item) {
+            return $item['geo'];
+        }
+    } else
+        return "null";
+            
+    }
+    
+    function seacherCity($paPDO, $paSRID, $name)
+    {   
+        $mySQLStr = "SELECT ST_AsGeoJson(geom) as geo from gadm41_vnm_1 where name_1 like '$name'";
+        $result = query($paPDO, $mySQLStr);
+
+        if ($result != null) {
+            // Lặp kết quả
+            foreach ($result as $item) {
+                return $item['geo'];
+            }
+        } else
+            return "null";
+    }
+
+    function getInfoSearchoAjax($paPDO, $paSRID, $name)
+    {   
+        $mySQLStr = "SELECT gid, shape_leng, shape_area, name_1 as geo from gadm41_vnm_1 where name_1 like '$name'";
+        $result = query($paPDO, $mySQLStr);
+
+        if ($result != null)
+        {
+            $resFin = '<table>';
+            // Lặp kết quả
+            foreach ($result as $item){
+                $resFin = $resFin.'<tr><td>gid_1: '.$item['gid'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Tên tỉnh: '.$name.'</td></tr>';
+                $resFin = $resFin.'<tr><td>Chu vi: '.$item['shape_leng'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Diện tích: '.$item['shape_area'].'</td></tr>';
+                break;
+            }
+            $resFin = $resFin.'</table>';
+            return $resFin;
         }
         else
             return "null";
