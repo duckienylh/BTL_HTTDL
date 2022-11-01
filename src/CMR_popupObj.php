@@ -67,7 +67,6 @@
                     <a href="#" id="popup-closer" class="ol-popup-closer">X</a>
                     <div id="popup-content"></div>
                 </div>
-                <div id="info1"></div>
             </td>
         </tr>
     </table>
@@ -204,6 +203,7 @@
         function displayObjInfo(result, coordinate) {
             $("#popup-content").html(result);
             overlay.setPosition(coordinate);
+            displayObjInfo1('');
         }
 
         function highLightGeoJsonObj(paObjJson) {
@@ -223,7 +223,7 @@
         }
 
         function displayObjInfo1(result, coordinate) {
-            $("#info1").html(result);
+            $("#info").html(result);
         }
 
         var button = document.getElementById("btnSeacher").addEventListener("click",

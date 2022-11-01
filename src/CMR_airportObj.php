@@ -223,7 +223,7 @@
         }
 
         function displayObjInfo1(result, coordinate) {
-            $("#info1").html(result);
+            $("#info").html(result);
         }
 
         var button = document.getElementById("btnSeacher").addEventListener("click",
