@@ -31,8 +31,8 @@
         $paSRID = '4326';
         $name = $_POST['name'];
         $functionname2 = $_POST['functionname2'];
-        if($functionname2 == 'seacherCity')
-            $aResult = seacherCity($paPDO, $paSRID, $name);
+        if($functionname2 == 'getGeoSearchCity')
+            $aResult = getGeoSearchCity($paPDO, $paSRID, $name);
         else if($functionname2 == 'getInfoSearchoAjax')
             $aResult = getInfoSearchoAjax($paPDO, $paSRID, $name);
         
@@ -217,7 +217,7 @@
             
     }
     
-    function seacherCity($paPDO, $paSRID, $name)
+    function getGeoSearchCity($paPDO, $paSRID, $name)
     {   
         $mySQLStr = "SELECT ST_AsGeoJson(geom) as geo from gadm41_vnm_1 where name_1 like '$name'";
         $result = query($paPDO, $mySQLStr);

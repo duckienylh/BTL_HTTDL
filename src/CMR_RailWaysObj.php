@@ -144,7 +144,7 @@
                                     type: "POST",
                                     url: "CMR_pgsqlAPI.php",
                                     data: {
-                                        functionname2: 'seacherCity',
+                                        functionname2: 'getGeoSearchCity',
                                         name: ctiy.value
                                     },
                                     
