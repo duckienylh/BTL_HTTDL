@@ -32,7 +32,7 @@
             </div>
             <div class="col-3">
                 <div class="d-flex justify-content-end">
-                    <input class="form-control me-2" placeholder="Tìm kiếm tên thành phố" aria-label="Search" id="ctiy">
+                    <input class="form-control me-2" placeholder="Tìm kiếm tên tỉnh, sân bay, hải cảng,..." aria-label="Search" id="ctiy">
                     <button class="btn btn-outline-success" id="btnSeacher">Search</button>
                 </div>
             </div>
