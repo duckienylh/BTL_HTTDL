@@ -67,7 +67,6 @@
                     <a href="#" id="popup-closer" class="ol-popup-closer">X</a>
                     <div id="popup-content"></div>
                 </div>
-                <div id="info1"></div>
             </td>
         </tr>
     </table>
@@ -203,6 +202,7 @@
 
         function displayObjInfo(result, coordinate) {
             $("#popup-content").html(result);
+            displayObjInfo1('');
             overlay.setPosition(coordinate);
         }
 
@@ -256,6 +256,7 @@
                                 name: ctiy.value
                             },
                             success: function(result, status, erro) {
+                                overlay.setPosition(undefined);
                                 displayObjInfo1(result);
                             },
                             error: function(req, status, error) {

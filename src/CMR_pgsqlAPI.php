@@ -42,7 +42,7 @@
     function initDB()
     {
         // Kết nối CSDL
-        $paPDO = new PDO('pgsql:host=localhost;dbname=BTL;port=5432', 'postgres', '123456');
+        $paPDO = new PDO('pgsql:host=localhost;dbname=BTL;port=5432', 'postgres', '20122001');
         return $paPDO;  
     }
     function query($paPDO, $paSQLStr)

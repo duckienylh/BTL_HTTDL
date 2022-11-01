@@ -197,6 +197,7 @@
                         url: "CMR_pgsqlAPI.php",
                         data: {functionname: 'getGeoRailWayoAjax', paPoint: myPoint},
                         success : function (result, status, erro) {
+                            displayObjInfo('');
                             highLightObj(result);
                         },
                         error: function (req, status, error) {

@@ -256,6 +256,7 @@
                                 name: ctiy.value
                             },
                             success: function(result, status, erro) {
+                                overlay.setPosition(undefined);
                                 displayObjInfo1(result);
                             },
                             error: function(req, status, error) {
