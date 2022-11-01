@@ -64,8 +64,19 @@
             layers: [layerBG, layerCMR_adm1],
             view: viewMap
         });
+        var image = new ol.style.Circle({
+            radius: 5,
+            fill: null,
+            stroke: new ol.style.Stroke({
+                color: "yellow",
+                width: 5
+            }),
+        });
 
         var styles = {
+            'Point': new ol.style.Style({
+                image: image,
+            }),
             'MultiPolygon': new ol.style.Style({
                 fill: new ol.style.Fill({
                     color: 'orange'

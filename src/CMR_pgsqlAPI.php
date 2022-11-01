@@ -220,21 +220,45 @@
     function getGeoSearchCity($paPDO, $paSRID, $name)
     {   
         $mySQLStr = "SELECT ST_AsGeoJson(geom) as geo from gadm41_vnm_1 where name_1 like '$name'";
-        $result = query($paPDO, $mySQLStr);
+        $mySQLStr1 = "SELECT ST_AsGeoJson(geom) as geo from cang where ten_cang like '$name'";
+        $mySQLStr2 = "SELECT ST_AsGeoJson(geom) as geo from sanbay where ten like '$name'";
 
+
+        $result = query($paPDO, $mySQLStr);
+        $result1 = query($paPDO, $mySQLStr1);
+        $result2 = query($paPDO, $mySQLStr2);
+       
         if ($result != null) {
             // Lặp kết quả
             foreach ($result as $item) {
                 return $item['geo'];
             }
-        } else
+        } 
+        if ($result1 != null) {
+            // Lặp kết quả
+            foreach ($result1 as $item) {
+                return $item['geo'];
+            }
+        }
+        if ($result2 != null) {
+            // Lặp kết quả
+            foreach ($result2 as $item) {
+                return $item['geo'];
+            }
+        }
+        else
             return "null";
     }
 
     function getInfoSearchoAjax($paPDO, $paSRID, $name)
     {   
         $mySQLStr = "SELECT gid, shape_leng, shape_area, name_1 as geo from gadm41_vnm_1 where name_1 like '$name'";
+        $mySQLStr1 = "SELECT * from cang where ten_cang like '$name'";
+        $mySQLStr2 = "SELECT * from sanbay where ten like '$name'";
+
         $result = query($paPDO, $mySQLStr);
+        $result1 = query($paPDO, $mySQLStr1);
+        $result2 = query($paPDO, $mySQLStr2);
 
         if ($result != null)
         {
@@ -245,6 +269,34 @@
                 $resFin = $resFin.'<tr><td>Tên tỉnh: '.$name.'</td></tr>';
                 $resFin = $resFin.'<tr><td>Chu vi: '.$item['shape_leng'].'</td></tr>';
                 $resFin = $resFin.'<tr><td>Diện tích: '.$item['shape_area'].'</td></tr>';
+                break;
+            }
+            $resFin = $resFin.'</table>';
+            return $resFin;
+        }
+        if ($result1 != null)
+        {
+        
+            $resFin = '<table>';
+            // Lặp kết quả
+            foreach ($result1 as $item){
+                $resFin = $resFin.'<tr><td>gid: '.$item['gid'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Tên cảng: '.$item['ten_cang'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Loại: '.$item['loai'].'</td></tr>';
+                break;
+            }
+            $resFin = $resFin.'</table>';
+            return $resFin;
+        }
+        if ($result2 != null)
+        {
+        
+            $resFin = '<table>';
+            // Lặp kết quả
+            foreach ($result2 as $item){
+                $resFin = $resFin.'<tr><td>gid: '.$item['gid'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Tên sân bay: '.$item['ten'].'</td></tr>';
+                $resFin = $resFin.'<tr><td>Loại: '.$item['loai'].'</td></tr>';
                 break;
             }
             $resFin = $resFin.'</table>';

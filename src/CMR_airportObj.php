@@ -67,6 +67,7 @@
                     <a href="#" id="popup-closer" class="ol-popup-closer">X</a>
                     <div id="popup-content"></div>
                 </div>
+                <div id="info1"></div>
             </td>
         </tr>
     </table>
@@ -221,6 +222,10 @@
             highLightGeoJsonObj(objJson);
         }
 
+        function displayObjInfo1(result, coordinate) {
+            $("#info1").html(result);
+        }
+
         var button = document.getElementById("btnSeacher").addEventListener("click",
                 () => {
                     vectorLayer.setStyle(styleFunction);
@@ -253,7 +258,7 @@
                                 name: ctiy.value
                             },
                             success: function(result, status, erro) {
-                                displayObjInfo(result);
+                                displayObjInfo1(result);
                             },
                             error: function(req, status, error) {
                                 alert(req + " " + status + " " + error);

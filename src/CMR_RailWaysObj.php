@@ -56,6 +56,14 @@
                     center: ol.proj.fromLonLat([mapLng, mapLat]),
                     zoom: mapDefaultZoom
                 });
+                var image = new ol.style.Circle({
+                    radius: 5,
+                    fill: null,
+                    stroke: new ol.style.Stroke({
+                        color: "yellow",
+                        width: 5
+                    }),
+                });
                 map = new ol.Map({
                     target: "map",
                     layers: [layerBG, layerCMR_adm1],
@@ -63,6 +71,9 @@
                 });
                 
                 var styles = {
+                    'Point': new ol.style.Style({
+                        image: image,
+                    }),
                     'MultiLineString': new ol.style.Style({
                     stroke: new ol.style.Stroke({
                         color: 'red',
@@ -149,7 +160,6 @@
                                     },
                                     
                                     success: function(result, status, erro) {
-                                        console.log('abc');
                                         if (result == 'null')
                                             alert("không tìm thấy đối tượng");
                                         else
