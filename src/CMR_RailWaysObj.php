@@ -91,7 +91,6 @@
                     })
                 };
                 var styleFunction = function (feature) {
-                    console.log(feature.getGeometry().getType());
                     return styles[feature.getGeometry().getType()];
                 };
                 var vectorLayer = new ol.layer.Vector({
@@ -163,7 +162,6 @@
                                         if (result == 'null')
                                             alert("không tìm thấy đối tượng");
                                         else
-                                            console.log(result);
                                             highLightObj(result);
                                     },
                                     error: function(req, status, error) {

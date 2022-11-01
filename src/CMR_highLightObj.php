@@ -159,11 +159,9 @@
                             },
                             
                             success: function(result, status, erro) {
-                                console.log('abc');
                                 if (result == 'null')
                                     alert("không tìm thấy đối tượng");
                                 else
-                                    console.log(result);
                                     highLightObj(result);
                             },
                             error: function(req, status, error) {
